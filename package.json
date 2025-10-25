@@ -1,41 +1,69 @@
 {
-  "name": "colors",
-  "displayName": "\tcolors",
+  "name": "colors-mcp",
+  "displayName": "colors-mcp",
+  "publisher": "SyedSyab",
   "description": "Generate professional color palettes as CSS variables.",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SyabAhmad/colors.git"
+  },
   "engines": {
     "vscode": "^1.105.0"
   },
+  "icon": "images/icon.png",
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:colors.generateColors",
+    "onCommand:colors.generatePalette"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "colors.helloWorld",
-        "title": "Hello World"
+        "command": "colors.generateColors",
+        "title": "Colors: Generate Colors"
+      },
+      {
+        "command": "colors.generatePalette",
+        "title": "Colors: Generate Palette"
       }
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run build:mcp && npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
+    "build:mcp": "tsc --outDir dist/mcp --target ES2020 --module commonjs --rootDir mcp mcp/server.ts mcp/palette.ts",
+    "watch:mcp": "tsc --outDir dist/mcp --target ES2020 --module commonjs --rootDir mcp --watch mcp/server.ts mcp/palette.ts",
+    "start:mcp": "node dist/mcp/server.js",
+    "test:mcp": "node testRequest.js",
+    "test:palette": "node tests/palette.test.js",
+    "pretest": "npm run build:mcp && npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.105.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
+    "@types/vscode": "^1.105.0",
     "@typescript-eslint/eslint-plugin": "^8.45.0",
     "@typescript-eslint/parser": "^8.45.0",
-    "eslint": "^9.36.0",
-    "typescript": "^5.9.3",
     "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2"
-  }
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^9.36.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "culori": "^2.1.1"
+  },
+  "files": [
+    "out/**",
+    "dist/mcp/**",
+    "README.md",
+    "package.json",
+    "images/**"
+  ]
 }

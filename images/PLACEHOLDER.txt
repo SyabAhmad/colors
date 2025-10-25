@@ -1,0 +1,7 @@
+Add your extension icon(s) and screenshots to this folder.
+
+Recommended files:
+- images/icon.png        (128x128 PNG) -- icon shown in Marketplace
+- images/screenshot1.png (1280x720 PNG) -- screenshot shown in README/Marketplace
+
+Replace these files with your own artwork before publishing. If you want, I can add a temporary placeholder PNG.

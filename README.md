@@ -1,71 +1,161 @@
-# colors README
+# colors
 
-This is the README for your extension "colors". After writing up a brief description, we recommend including the following sections.
+Generate beautiful, professional color palettes as CSS variables — instantly.
 
-## Features
+✨ One command → clean palette → copy as CSS  
+🤖 Also works with AI tools via MCP (Model Context Protocol)
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Perfect for developers, designers, and Copilot.
 
-For example if there is an image subfolder under your extension project workspace:
+`colors` is a VS Code extension that provides both a human-facing UI and an MCP-style JSON-RPC tool for AI clients to generate professional color palettes.
 
-\!\[feature X\]\(images/feature-x.png\)
+# colors
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Generate beautiful, professional color palettes as CSS variables — instantly.
 
-## Requirements
+✨ One command → clean palette → copy as CSS  
+🤖 Also works with AI tools via MCP (Model Context Protocol)
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Perfect for developers, designers, and Copilot.
 
-## Extension Settings
+`colors` is a VS Code extension that provides both a human-facing UI and an MCP-style JSON-RPC tool for AI clients to generate professional color palettes.
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## MCP tool: `generatePalette`
 
-For example:
+- Method: `generatePalette`
+- Params (optional):
+  - `seed` (string) — hex color used to bias the palette (e.g. `#3B82F6`).
+  - `theme` (string) — named theme such as `default`, `ecommerce`, `calm`. Defaults to `default`.
+  - `dark` (boolean) — if true, the palette is tailored for dark backgrounds. Defaults to `false`.
+  - `shades` (number) — number of tonal steps per token (default 9).
+  - `includeAccessibility` (boolean) — include contrast/WCAG metadata for each shade.
 
-This extension contributes the following settings:
+Response (success): JSON-RPC 2.0 response with `result` containing a `palette` object and a `content` array (text blocks). Example:
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "palette": {
+      /* structured tokens */
+    },
+    "content": [
+      { "type": "text", "text": ":root { --primary-400: #3466F2; ... }" }
+    ]
+  }
+}
+```
 
-## Known Issues
+Framing: the server accepts Content-Length framed JSON-RPC messages on stdin and replies on stdout (same framing as LSP), e.g.:
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+```
+Content-Length: 72\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"generatePalette","params":{"theme":"ecommerce"}}
+```
 
-## Release Notes
+## Build & Run
 
-Users appreciate release notes as you update your extension.
+Build the MCP server:
 
-### 1.0.0
+```powershell
+npm run build:mcp
+```
 
-Initial release of ...
+Run the server manually:
 
-### 1.0.1
+```powershell
+node dist/mcp/server.js
+```
 
-Fixed issue #.
+Helper npm scripts:
 
-### 1.1.0
+```powershell
+# build the MCP server
+npm run build:mcp
 
-Added features X, Y, and Z.
+# start the compiled server
+npm run start:mcp
 
----
+# run the automated test helper (spawns server and sends requests)
+npm run test:mcp
+```
 
-## Following extension guidelines
+## Example params
 
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
+```json
+{
+  "seed": "#3B82F6",
+  "theme": "ecommerce",
+  "shades": 10,
+  "includeAccessibility": true
+}
+```
 
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
+- `seed`: hex string or array of hex seeds for primary/secondary/accent.
+- `shades`: tonal steps per token.
+- `includeAccessibility`: attach contrast/WCAG numbers.
 
-## Working with Markdown
+Using these params the server returns `result.palette` (array tokens per group) and `result.content` (CSS text block) that you can insert into your project's styles.
 
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
+## Packaging note
 
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
+When publishing, ensure `dist/mcp/server.js` is included in the VSIX. The repository includes a `build:mcp` script that compiles the server into `dist/mcp`.
 
-## For more information
+## Contributing
 
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
+Contributions, bug reports and feature requests are welcome. Please open issues or pull requests.
 
-**Enjoy!**
+## License
+
+MIT
+
+Build the MCP server:
+
+```powershell
+npm run build:mcp
+```
+
+Run the server manually:
+
+```powershell
+node dist/mcp/server.js
+```
+
+The server will print a ready message and wait for JSON-RPC requests.
+
+Helper npm scripts:
+
+```powershell
+# build the MCP server
+npm run build:mcp
+
+# start the compiled server
+npm run start:mcp
+
+# run the automated test helper (spawns server and sends requests)
+npm run test:mcp
+```
+
+## Example params
+
+```
+{ "seed": "#3B82F6", "theme": "ecommerce", "shades": 10, "includeAccessibility": true }
+```
+
+- `seed`: hex string or array of hex seeds for primary/secondary/accent.
+- `shades`: tonal steps per token.
+- `includeAccessibility`: attach contrast/WCAG numbers.
+
+Using these params the server returns `result.palette` (array tokens per group) and `result.content` (CSS text block) that you can insert into your project's styles.
+
+## Packaging note
+
+When publishing, ensure `dist/mcp/server.js` is included in the VSIX. The repository includes a `build:mcp` script that compiles the server into `dist/mcp`.
+
+## Contributing
+
+Contributions, bug reports and feature requests are welcome. Please open issues or pull requests.
+
+## License
+
+MIT
