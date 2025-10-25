@@ -9,96 +9,128 @@ Perfect for developers, designers, and Copilot.
 
 `colors` is a VS Code extension that provides both a human-facing UI and an MCP-style JSON-RPC tool for AI clients to generate professional color palettes.
 
-# colors
+# colors — usage guide
 
-Generate beautiful, professional color palettes as CSS variables — instantly.
+Quick start: generate a polished color palette and copy it as CSS variables.
 
-✨ One command → clean palette → copy as CSS  
-🤖 Also works with AI tools via MCP (Model Context Protocol)
+This extension helps designers and developers create consistent, accessible color palettes and export them as CSS variables you can paste into your styles.
 
-Perfect for developers, designers, and Copilot.
+Install the extension, open the Command Palette (Ctrl+Shift+P), and run one of the commands:
 
-`colors` is a VS Code extension that provides both a human-facing UI and an MCP-style JSON-RPC tool for AI clients to generate professional color palettes.
+- `Colors: Generate Colors` — quick prompt-based palette generator.
+- `Colors: Generate Palette` — generate a palette with defaults (or use the UI).
 
-## MCP tool: `generatePalette`
+What you get
 
-- Method: `generatePalette`
-- Params (optional):
-  - `seed` (string) — hex color used to bias the palette (e.g. `#3B82F6`).
-  - `theme` (string) — named theme such as `default`, `ecommerce`, `calm`. Defaults to `default`.
-  - `dark` (boolean) — if true, the palette is tailored for dark backgrounds. Defaults to `false`.
-  - `shades` (number) — number of tonal steps per token (default 9).
-  - `includeAccessibility` (boolean) — include contrast/WCAG metadata for each shade.
+- A semantic palette grouped into tokens: primary, secondary, accent, neutral, success, warning, danger.
+- Each group contains a tonal scale (light → dark) as CSS variables (e.g. `--primary-100`, `--primary-400`, `--primary-700`).
+- Optional accessibility metadata (contrast ratios) when requested.
 
-Response (success): JSON-RPC 2.0 response with `result` containing a `palette` object and a `content` array (text blocks). Example:
+Example output (ready-to-paste CSS)
+
+```css
+:root {
+  --primary-50: #ffffff;
+  --primary-100: #ccd9fc;
+  --primary-200: #9ab3f9;
+  --primary-300: #678cf5;
+  --primary-400: #3466f2;
+  --primary-500: #274db5;
+  --primary-600: #1a3379;
+  --primary-700: #0d193d;
+  --primary-800: #000000;
+  /* secondary, accent, neutral, success, warning, danger follow */
+}
+```
+
+How to use the palette in your UI
+
+- Button example
+
+```css
+.btn-primary {
+  background: var(--primary-400);
+  color: var(--neutral-50);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.btn-primary:hover {
+  background: var(--primary-300);
+}
+```
+
+- Surface and text
+
+```css
+.card {
+  background: var(--neutral-50);
+  color: var(--neutral-700);
+}
+.card--dark {
+  background: var(--neutral-800);
+  color: var(--neutral-50);
+}
+```
+
+Accessibility tips
+
+- Aim for at least 4.5:1 contrast for normal text and 3:1 for large text. The extension can include contrast metadata if you enable it when generating the palette.
+- If a text/background pair fails contrast checks, swap to a darker/lighter step from the same group (e.g. `--primary-600` instead of `--primary-400`) or use a neutral token for text.
+
+Advanced: programmatic use (AI / scripts)
+
+The extension includes an MCP-style JSON-RPC server (stdio framed) so AI agents and scripts can request palettes programmatically. This is optional — you can ignore this section if you only use the UI.
+
+Request shape (JSON-RPC over Content-Length framing)
+
+Example JSON body:
 
 ```json
 {
   "jsonrpc": "2.0",
   "id": 1,
-  "result": {
-    "palette": {
-      /* structured tokens */
-    },
-    "content": [
-      { "type": "text", "text": ":root { --primary-400: #3466F2; ... }" }
-    ]
+  "method": "generatePalette",
+  "params": { "seed": "#3466f2", "shades": 9, "includeAccessibility": true }
+}
+```
+
+Framed example to write to the server stdin (header + body):
+
+```
+Content-Length: <N>\r\n\r\n{"jsonrpc":"2.0","id":1,...}
+```
+
+Response (abridged):
+
+```json
+{
+  "jsonrpc":"2.0",
+  "id":1,
+  "result":{
+    "palette": { "primary": ["#FFFFFF","#CCD9FC",...], /* ... */ },
+    "content": [ { "type":"text", "text": ":root { --primary-100: #CCD9FC; ... }" } ]
   }
 }
 ```
 
-Framing: the server accepts Content-Length framed JSON-RPC messages on stdin and replies on stdout (same framing as LSP), e.g.:
+You can write the concatenated `content` text block straight into a CSS/SCSS file. The `palette` object is convenient for programmatic manipulations (e.g. converting tokens to Tailwind config or design-tokens JSON).
 
-```
-Content-Length: 72\r\n\r\n{"jsonrpc":"2.0","id":1,"method":"generatePalette","params":{"theme":"ecommerce"}}
-```
+Troubleshooting & tips
 
-## Build & Run
+- If the palette looks too flat (many whites/blacks), try giving a stronger `seed` color or more `shades`.
+- For dark themes, use the `dark` option when generating to get palettes optimized for dark backgrounds.
+- If you're integrating with design systems, use the structured `palette` output — it contains arrays for each semantic group and optional contrast values.
 
-Build the MCP server:
+Want a quick preview?
 
-```powershell
-npm run build:mcp
-```
+1. Run `Colors: Generate Palette` in the Command Palette.
+2. The CSS opens in an editor tab — paste it into your styles and refresh your app to preview.
 
-Run the server manually:
+Feedback and help
 
-```powershell
-node dist/mcp/server.js
-```
+If something isn't working or you'd like a feature (color presets, WCAG auto-fixes, dark-mode variants), open an issue in the repository.
 
-Helper npm scripts:
-
-```powershell
-# build the MCP server
-npm run build:mcp
-
-# start the compiled server
-npm run start:mcp
-
-# run the automated test helper (spawns server and sends requests)
-npm run test:mcp
-```
-
-## Example params
-
-```json
-{
-  "seed": "#3B82F6",
-  "theme": "ecommerce",
-  "shades": 10,
-  "includeAccessibility": true
-}
-```
-
-- `seed`: hex string or array of hex seeds for primary/secondary/accent.
-- `shades`: tonal steps per token.
-- `includeAccessibility`: attach contrast/WCAG numbers.
-
-Using these params the server returns `result.palette` (array tokens per group) and `result.content` (CSS text block) that you can insert into your project's styles.
-
-## Packaging note
-
+Enjoy building beautiful palettes!
 When publishing, ensure `dist/mcp/server.js` is included in the VSIX. The repository includes a `build:mcp` script that compiles the server into `dist/mcp`.
 
 ## Contributing

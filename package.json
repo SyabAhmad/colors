@@ -3,7 +3,7 @@
   "displayName": "colors-mcp",
   "publisher": "SyedSyab",
   "description": "Generate professional color palettes as CSS variables.",
-  "version": "0.0.2",
+  "version": "0.0.31",
   "repository": {
     "type": "git",
     "url": "https://github.com/SyabAhmad/colors.git"
@@ -65,5 +65,18 @@
     "README.md",
     "package.json",
     "images/**"
-  ]
+  ],
+  "mcp": {
+    "servers": {
+      "colors-mcp": {
+        "command": "node",
+        "args": [
+          "dist/mcp/server.js"
+        ],
+        "env": {
+          "NODE_ENV": "production"
+        }
+      }
+    }
+  }
 }
